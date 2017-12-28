@@ -105,27 +105,50 @@ class List {
     ~List() {
         clear();
     }
+    template <typename TT>
+    friend void merge(List<TT>& merged, List<TT>& left, List<TT>& right);
 };
 
 template <typename T>
-void merge(List<T>& merged, List<T>& left, List<T>& right) {
-    while (!left.empty() && !right.empty()) {
-        if (right.front() < left.front()) {
-            merged.push(right.front());
-            right.pop();
+void merge(List<T>& lst, List<T>& left, List<T>& right) {
+    if (left.first->me < right.first->me) {
+        lst.first = left.first;
+        left.first = left.first->next;
+        left.sz -= 1;
+    } else {
+        lst.first = right.first;
+        right.first = right.first->next;
+        right.sz -= 1;
+    }
+    lst.last = lst.first;
+    lst.sz += 1;
+    lst.last->next = nullptr;        
+    while (!(left.first == nullptr) && !(right.first == nullptr)) {
+        if (left.first->me <= right.first->me) {
+            lst.last->next = left.first;
+            left.first = left.first->next;
+            left.sz -= 1;
         } else {
-            merged.push(left.front());
-            left.pop();
+            lst.last->next = right.first;
+            right.first = right.first->next;
+            right.sz -= 1;
         }
+        lst.last = lst.last->next;
+        lst.sz += 1;
     }
-    while (!left.empty()) {
-        merged.push(left.front());
-        left.pop();
+    if (left.first == nullptr) {
+        lst.last->next = right.first;
+        lst.sz += right.sz;
+    } else {
+        lst.last->next = left.first;
+        lst.sz += left.sz;
     }
-    while (!right.empty()) {
-        merged.push(right.front());
-        right.pop();
-    }
+    left.first = nullptr;
+    left.last = nullptr;
+    left.sz = 0;
+    right.first = nullptr;
+    right.last = nullptr;
+    right.sz = 0;
 }
 
 
