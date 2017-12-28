@@ -3,37 +3,37 @@
 #include <fstream>
 #include <utility>
 
-
+template <typename D>
 struct Node {
-    int me = 0;
+    D me;
     Node * next = nullptr;
-    Node(int _me)
+    Node(D _me)
     : me(_me)
     {}
     ~Node(){}
 };
 
-
+template <typename T>
 class List {
-    Node * first = nullptr;
-    Node * last = nullptr;
+    Node<T> * first = nullptr;
+    Node<T> * last = nullptr;
   public:
     size_t sz = 0;
     List() 
     {};
 
-    List(const List& oth) {
+    List(const List<T>& oth) {
         clear();
-        Node * nxt = oth.first;
+        Node<T> * nxt = oth.first;
         while (nxt != nullptr) {
             push(nxt->me);
             nxt = nxt->next;
         }
     }
 
-    List& operator = (const List& oth) {
+    List<T>& operator = (const List<T>& oth) {
         clear();
-        Node * nxt = oth.first;
+        Node<T> * nxt = oth.first;
         while (nxt != nullptr) {
             push(nxt->me);
             nxt = nxt->next;
@@ -41,9 +41,9 @@ class List {
         return *this;
     }
 
-    List& operator = (const List&& oth) {
+    List<T>& operator = (const List<T>&& oth) {
         clear();
-        Node * nxt = oth.first;
+        Node<T> * nxt = oth.first;
         while (nxt != nullptr) {
             push(nxt->me);
             nxt = nxt->next;
@@ -69,8 +69,8 @@ class List {
         }
     }
 
-    void push(int x) {
-        Node * new_last = new Node(x);
+    void push(T x) {
+        Node<T> * new_last = new Node<T>(x);
         if (size() == 0) {
             first = new_last;
             last = new_last;
@@ -81,7 +81,7 @@ class List {
         ++sz;
     }
     void pop() {
-        Node * delete_me = first;
+        Node<T> * delete_me = first;
         first = first->next;
         delete delete_me;
         --sz;
@@ -92,7 +92,7 @@ class List {
 
     friend std::ostream & operator <<(std::ostream & out, const List& l)
     {
-        Node * nxt = l.first;
+        Node<T> * nxt = l.first;
         while (nxt != nullptr) {
             out << nxt->me << ' ';
             nxt = nxt->next;
@@ -100,28 +100,15 @@ class List {
         return out;
     }
 
-    void divide(List& left, List& right) const {
-        bool choose = 0;
-        Node * nxt = first;
-        while (nxt != nullptr) {
-            if (choose) {
-                left.push(nxt->me);
-            } else {
-                right.push(nxt->me);
-            }
-            nxt = nxt->next;
-            choose = !choose;
-        }
-    }
-
+    template <typename TT>
+    friend void divide(List<TT>& me, List<TT>& left, List<TT>& right);
     ~List() {
         clear();
     }
 };
 
-
-List merge(List left, List right) {
-    List merged;
+template <typename T>
+void merge(List<T>& merged, List<T>& left, List<T>& right) {
     while (!left.empty() && !right.empty()) {
         if (right.front() < left.front()) {
             merged.push(right.front());
@@ -139,36 +126,54 @@ List merge(List left, List right) {
         merged.push(right.front());
         right.pop();
     }
-    return merged;
 }
 
 
-List mergesort(List const& lst) {
-    if (lst.size() == 1) {
-        return lst;
+template <typename T>
+void divide(List<T>& lst, List<T>& l, List<T>& r) {
+    size_t sz = lst.size();
+    l.first = lst.first;
+    r.last = lst.last;
+    Node<T> * me = l.first;
+    for (size_t i = 1; i < sz / 2; ++i) {
+        me = me->next;
     }
-    List even;
-    List odd;
-    lst.divide(even, odd);
-    even = mergesort(even);
-    odd = mergesort(odd);
-    return merge(even, odd);
+    l.last = me;
+    r.first = me->next;
+    me->next = nullptr;
+    l.sz = sz / 2;
+    r.sz = sz - sz / 2;
+    lst.first = nullptr;
+    lst.last = nullptr;
+    lst.sz = 0;
+    return;
 }
 
 
-using namespace std;
+template <typename T>
+void mergesort(List<T>& lst) {
+    if (lst.size() == 1) {
+        return;
+    }
+    List<T> even;
+    List<T> odd;
+    divide(lst, even, odd);
+    mergesort(even);
+    mergesort(odd);
+    merge(lst, even, odd);
+}
 
 
 int main() {
     size_t n = 0;
-    cin >> n;
-    List lst;
+    std::cin >> n;
+    List<int> lst;
     for (size_t i = 0; i < n; ++i) {
         int x = 0;
-        cin >> x;
+        std::cin >> x;
         lst.push(x);
     }
-    lst = mergesort(lst);
-    cout << lst << endl;
+    mergesort(lst);
+    std::cout << lst << std::endl;
 }
 
