@@ -5,14 +5,14 @@
 #include <iostream>
 
 
-const size_t HashMapStorageSize = 11;
+const size_t HASH_MAP_STORAGE_SIZE = 11;
 
 template<class KeyType,
          class ValueType,
          class Hash = std::hash<KeyType> > 
 class HashMap {
   private:
-    const size_t StorageResizeMultiplier = 2;
+    const size_t STORAGE_RESIZE_MULTIPLIER = 2;
     using Key_Value = std::pair<const KeyType, ValueType>;
     using HashMapList = std::list<Key_Value>;
     using HashMapStorage = std::vector<std::vector<typename HashMapList::iterator>>;
@@ -28,14 +28,14 @@ class HashMap {
    
     HashMap(Hash _hasher = Hash())
     : hasher(_hasher) {
-        storage = HashMapStorage(HashMapStorageSize);
+        storage = HashMapStorage(HASH_MAP_STORAGE_SIZE);
     }
     template <class InpIt>
     HashMap(const InpIt begin,
             const InpIt end,
             Hash _hasher = Hash()) 
     : hasher(_hasher) {
-        storage = HashMapStorage(HashMapStorageSize);
+        storage = HashMapStorage(HASH_MAP_STORAGE_SIZE);
         for (auto it = begin; it != end; ++it) {
             size_t key_hash = hasher(it->first) % storage.size();
             iter.push_back(*it);
@@ -46,7 +46,7 @@ class HashMap {
     HashMap(const std::initializer_list<Key_Value> & init_list,
             Hash _hasher = Hash()) 
         : hasher(_hasher) {
-        storage = HashMapStorage(HashMapStorageSize);
+        storage = HashMapStorage(HASH_MAP_STORAGE_SIZE);
         for (auto it : init_list) {
             size_t key_hash = hasher(it.first) % storage.size();
             iter.push_back(it);
@@ -65,7 +65,7 @@ class HashMap {
     const Hash& hash_function() const {
         return hasher;
     }
-    void clear(size_t k = HashMapStorageSize) {
+    void clear(size_t k = HASH_MAP_STORAGE_SIZE) {
         iter.clear();
         storage.clear();
         sz = 0;
@@ -73,12 +73,12 @@ class HashMap {
     }
     void rebuild() {
         HashMapList iter2 = iter;
-        clear(storage.size() * StorageResizeMultiplier);
+        clear(storage.size() * STORAGE_RESIZE_MULTIPLIER);
         for (auto i : iter2) {
             insert(i);
         }
     }
-    void insert(const Key_Value & p) {
+    void insert(const Key_Value& p) {
         size_t key_hash = hasher(p.first) % storage.size();
         for (auto elem : storage[key_hash]) {
             if (elem->first == p.first) {
@@ -88,7 +88,7 @@ class HashMap {
         iter.push_back(p);
         ++sz;
         storage[key_hash].push_back(--iter.end());
-        if (StorageResizeMultiplier * sz > storage.size()){
+        if (STORAGE_RESIZE_MULTIPLIER * sz > storage.size()){
             rebuild();
         }
     }
@@ -155,7 +155,7 @@ class HashMap {
         }
     }
 
-    const ValueType& at(const KeyType & key) const{
+    const ValueType& at(const KeyType& key) const{
         const_iterator fnd = find(key);
         if (fnd != end()) {
             return fnd->second;
@@ -167,7 +167,7 @@ class HashMap {
 
     HashMap& operator= (const HashMap& hm) {
         HashMapList hmiter = hm.iter;
-        clear(std::max(StorageResizeMultiplier * sz, HashMapStorageSize));
+        clear(std::max(STORAGE_RESIZE_MULTIPLIER * sz, HASH_MAP_STORAGE_SIZE));
         hasher = hm.hasher;
         for (auto p : hmiter) {
             insert(p);
