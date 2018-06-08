@@ -55,11 +55,9 @@ bool djikstra(vector<vector<Edge*>> & g, vector<long long> & q, int start, int f
 {
 	cerr << "DBEGIN" << endl;
 	int n = g.size() - 1;
-	pair<long long, Edge*> go(g.size(), {INF, nullptr});
+	vector<pair<long long, Edge*>> go(g.size(), {INF, nullptr});
 	vector<bool> vis(n, 0);
 
-	fill(go, go + n + 1, make_pair(INF, nullptr));
-	fill(vis, vis + n, 0);
 	go[start] = {0, nullptr};
 	while (true)
 	{
