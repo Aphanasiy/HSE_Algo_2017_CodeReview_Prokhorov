@@ -8,21 +8,26 @@
 using namespace std;
 
 
-struct Edge
-{
+struct Edge {
 	int to;
 	int cpc;
 	int flow = 0;
 	int tm;
 	int num;
-	Edge * back = nullptr;
+	Edge* back = nullptr;
 	Edge(){};
-	Edge(int _to, int _tm, int _cpc, int _num): to(_to), tm(_tm), cpc(_cpc), num(_num){};
+	Edge(int _to, int _tm, int _cpc, int _num)
+	: to(_to)
+	, tm(_tm)
+	, cpc(_cpc)
+	, num(_num)
+	{}; 
+	// This is my style. I know, that it will 
+	// work without '_', but I prefer to use it
 };
 
 
-ostream & operator << (ostream & out, vector<int> const& v)
-{
+ostream& operator << (ostream& out, vector<int> const& v) {
 	for (auto i : v)
 	{
 		out << i << ' ';
@@ -34,7 +39,9 @@ ostream & operator << (ostream & out, vector<int> const& v)
 const long long INF = (2e9 + 7) * 1e6;
 
 
-void dfs(const vector<vector<Edge*>> & g, vector<int> & ans, long double & tm, int v = 1)
+void dfs(const vector<vector<Edge*>>& g,
+		 vector<int>& ans,
+		 long double& tm, int v = 1)
 {
 	for (auto i : g[v])
 	{
@@ -51,10 +58,10 @@ void dfs(const vector<vector<Edge*>> & g, vector<int> & ans, long double & tm, i
 }
 
 
-bool djikstra(vector<vector<Edge*>> & g, vector<long long> & q, int start, int finish)
-{
-	cerr << "DBEGIN" << endl;
-	int n = g.size() - 1;
+bool dijkstra(vector<vector<Edge*>>& g, vector<long long>& p, int start, int finish) {
+	// g = graph;
+	// p = potential;
+	size_t n = g.size() - 1;
 	vector<pair<long long, Edge*>> go(g.size(), {INF, nullptr});
 	vector<bool> vis(n, 0);
 
@@ -63,7 +70,7 @@ bool djikstra(vector<vector<Edge*>> & g, vector<long long> & q, int start, int f
 	{
 		int v = -1;
 		pair<long long, Edge*> cur = {INF, nullptr};
-		for (int i = 1; i <= n; i++)
+		for (size_t i = 1; i <= n; i++)
 		{
 			if (vis[i] == 0 && go[i] < cur)
 			{
@@ -76,14 +83,13 @@ bool djikstra(vector<vector<Edge*>> & g, vector<long long> & q, int start, int f
 		{
 			break;
 		}
-		//cerr << "V: " << v << ' ' << go[v].first << endl;
 		vis[v] = 1;
 		int d = cur.first;
 		for (auto i : g[v])
 		{
-			if (i->cpc > i->flow && go[i->to].first > d + q[v] + i->tm - q[i->to])
+			if (i->cpc > i->flow && go[i->to].first > d + p[v] + i->tm - p[i->to])
 			{
-				go[i->to] = make_pair(d + q[v] + i->tm - q[i->to], i);
+				go[i->to] = make_pair(d + p[v] + i->tm - p[i->to], i);
 			}
 		}
 	}
@@ -92,40 +98,24 @@ bool djikstra(vector<vector<Edge*>> & g, vector<long long> & q, int start, int f
 	{
 		return 0;
 	}
-	cerr << "DDONE" << endl;
 	int city = finish;
-	/*
-	cerr << "KEK" << endl;
-	for (int i = 0; i < 2 * n + 2; i++)
-	{
-		cerr << i << ": " << "Q" << q[i] << ' ' << go[i].first << ' ' << (go[i].second == nullptr ? -1 : go[i].second->back->to)  << endl;
-	}
-	//*/
 	while (go[city].second != nullptr)
 	{
 		go[city].second->flow += 1;
 		go[city].second->back->flow -= 1;
 		city = go[city].second->back->to;
 	}
-	for (int i = 0; i < n; i++)
+	for (size_t i = 0; i < n; i++)
 	{
-		q[i] += go[i].first;
+		p[i] += go[i].first;
 	}
-	/*
-	for (int i = 0; i < 2 * n + 2; i++)
-	{
-		cerr << q[i] << ' ';
-	}
-	cerr << endl;
-	//*/
 	return 1;
 }
 
 
-void bfs(const vector<vector<Edge*>> & g, vector<long long> & q)
-{
-	int n = g.size() - 1;
-	int start = 1;
+void bfs(const vector<vector<Edge*>> & g, vector<long long> & q) {
+	size_t n = g.size() - 1;
+	size_t start = 1;
 	vector<bool> vis(g.size(), 0);
 	vector<pair<int, Edge*>> p(g.size(), {INF, nullptr});
 	p[start] = {0, nullptr};
@@ -155,20 +145,17 @@ void bfs(const vector<vector<Edge*>> & g, vector<long long> & q)
 	{
 		return;
 	}
-	for (int i = 0; i <= n; ++i) {
+	for (size_t i = 0; i <= n; ++i) {
 		q[i] = p[i].first;
 	}
 }
 
-int main()
-{
-	//ifstream cin("brides.in");
-	//ofstream cout("brides.out");
 
-	int n, m, k;
+void read(vector<vector<Edge*>>& g, vector<vector<int>>& ans, size_t& k) {
+	size_t n, m;
 	cin >> n >> m >> k;
-	vector<vector<Edge*>> g(n + 1);
-	for (int i = 1; i <= m; i++)
+	g = vector<vector<Edge*>>(n + 1);
+	for (size_t i = 1; i <= m; i++)
 	{
 		int x, y, t;
 		cin >> x >> y >> t;
@@ -179,27 +166,43 @@ int main()
 		g[x].push_back(e);
 		g[y].push_back(e_b);
 	}
-	vector<vector<int>> ans(k);
-	vector<long long> q(n + 1, 0);
+	ans = vector<vector<int>>(k + 1);
+	return; 
+}
+
+
+long double solution(vector<vector<Edge*>>& g, vector<vector<int>>& ans, size_t k) {
+	vector<long long> q(g.size() + 1, 0);
 	bfs(g, q);
-	//cerr << q << endl;
-	for (int i = 0; i < k; ++i)
-		if (!djikstra(g, q, 1, n)){
+	for (size_t i = 0; i < k; ++i)
+		if (!dijkstra(g, q, 1, g.size() - 1)){
 			cout << -1 << endl;
 			return 0;
 		};
 	long double tm = 0;
-	for (int i = 0; i < k; i++)
+	for (size_t i = 0; i < k; i++)
 	{
 		dfs(g, ans[i], tm);
+	
 	}
-	//cerr.precision(6);
-	//cerr << fixed << tm / k << endl;
+	return tm;
+}
+
+
+void write(vector<vector<int>>& ans, long double tm, size_t k) {
 	cout.precision(6);
 	cout << fixed << tm / k << endl;
 	for (auto i : ans)
 	{
-		//cerr << i.size() << ": " << i << endl;
 		cout << i.size() << ' ' << i << endl;
 	}
+}
+
+
+int main() {
+	vector<vector<Edge*>> g;
+	vector<vector<int>> ans;
+	size_t k;
+	read(g, ans, k);
+	write(ans, solution(g, ans, k), k);
 }
