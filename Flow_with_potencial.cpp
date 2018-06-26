@@ -5,7 +5,14 @@
 #include <set>
 #include <queue>
 
-using namespace std;
+using std::vector;
+using std::pair;
+using std::cin;
+using std::cout;
+using std::endl;
+
+
+const long long INF = (2e9 + 7) * 1e6;
 
 
 struct Edge {
@@ -27,16 +34,13 @@ struct Edge {
 };
 
 
-ostream& operator << (ostream& out, vector<int> const& v) {
+std::ostream& operator << (std::ostream& out, vector<int> const& v) {
 	for (auto i : v)
 	{
 		out << i << ' ';
 	}
 	return out;
 }
-
-
-const long long INF = (2e9 + 7) * 1e6;
 
 
 void dfs(const vector<vector<Edge*>>& g,
@@ -78,7 +82,6 @@ bool dijkstra(vector<vector<Edge*>>& g, vector<long long>& p, int start, int fin
 				v = i;
 			}
 		}
-		cerr << v << endl;
 		if (v == -1)
 		{
 			break;
@@ -89,11 +92,10 @@ bool dijkstra(vector<vector<Edge*>>& g, vector<long long>& p, int start, int fin
 		{
 			if (i->cpc > i->flow && go[i->to].first > d + p[v] + i->tm - p[i->to])
 			{
-				go[i->to] = make_pair(d + p[v] + i->tm - p[i->to], i);
+				go[i->to] = {d + p[v] + i->tm - p[i->to], i};
 			}
 		}
 	}
-	cerr << finish << endl;
 	if (go[finish].second == nullptr)
 	{
 		return 0;
@@ -119,7 +121,7 @@ void bfs(const vector<vector<Edge*>> & g, vector<long long> & q) {
 	vector<bool> vis(g.size(), 0);
 	vector<pair<int, Edge*>> p(g.size(), {INF, nullptr});
 	p[start] = {0, nullptr};
-	queue<int> qu;
+	std::queue<int> qu;
 	qu.push(start);
 	vis[start] = 1;
 	while (!qu.empty())
@@ -191,7 +193,7 @@ long double solution(vector<vector<Edge*>>& g, vector<vector<int>>& ans, size_t 
 
 void write(vector<vector<int>>& ans, long double tm, size_t k) {
 	cout.precision(6);
-	cout << fixed << tm / k << endl;
+	cout << std::fixed << tm / k << endl;
 	for (auto i : ans)
 	{
 		cout << i.size() << ' ' << i << endl;
@@ -202,7 +204,7 @@ void write(vector<vector<int>>& ans, long double tm, size_t k) {
 int main() {
 	vector<vector<Edge*>> g;
 	vector<vector<int>> ans;
-	size_t k;
+	size_t k = 0;
 	read(g, ans, k);
 	write(ans, solution(g, ans, k), k);
 }
