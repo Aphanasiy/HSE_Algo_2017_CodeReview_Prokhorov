@@ -43,11 +43,11 @@ std::ostream& operator << (std::ostream& out, vector<int> const& v) {
 }
 
 
-void dfs(const vector<vector<Edge*>>& g,
+void dfs(const vector<vector<Edge*>>& graph,
 		 vector<int>& ans,
 		 long double& tm, int v = 1)
 {
-	for (auto i : g[v])
+	for (auto i : graph[v])
 	{
 		if (i->flow == 1)
 		{
@@ -55,44 +55,44 @@ void dfs(const vector<vector<Edge*>>& g,
 			tm += i->tm;
 			i->flow = 0;
 			i->back->flow = 0;
-			dfs(g, ans, tm, i->to);
+			dfs(graph, ans, tm, i->to);
 			return;
 		}
 	}
 }
 
 
-bool dijkstra(vector<vector<Edge*>>& g, vector<long long>& p, int start, int finish) {
+bool dijkstra(vector<vector<Edge*>>& graph, vector<long long>& potencial, int start, int finish) {
 	// g = graph;
 	// p = potential;
-	size_t n = g.size() - 1;
-	vector<pair<long long, Edge*>> go(g.size(), {INF, nullptr});
+	size_t n = graph.size() - 1;
+	vector<pair<long long, Edge*>> go(graph.size(), {INF, nullptr});
 	vector<bool> vis(n, 0);
 
 	go[start] = {0, nullptr};
 	while (true)
 	{
-		int v = -1;
+		int current_vertux = -1;
 		pair<long long, Edge*> cur = {INF, nullptr};
 		for (size_t i = 1; i <= n; i++)
 		{
 			if (vis[i] == 0 && go[i] < cur)
 			{
 				cur = go[i];
-				v = i;
+				current_vertux = i;
 			}
 		}
-		if (v == -1)
+		if (current_vertux == -1)
 		{
 			break;
 		}
-		vis[v] = 1;
+		vis[current_vertux] = 1;
 		int d = cur.first;
-		for (auto i : g[v])
+		for (auto i : graph[current_vertux])
 		{
-			if (i->cpc > i->flow && go[i->to].first > d + p[v] + i->tm - p[i->to])
+			if (i->cpc > i->flow && go[i->to].first > d + potencial[current_vertux] + i->tm - potencial[i->to])
 			{
-				go[i->to] = {d + p[v] + i->tm - p[i->to], i};
+				go[i->to] = {d + potencial[current_vertux] + i->tm - potencial[i->to], i};
 			}
 		}
 	}
@@ -109,17 +109,17 @@ bool dijkstra(vector<vector<Edge*>>& g, vector<long long>& p, int start, int fin
 	}
 	for (size_t i = 0; i < n; i++)
 	{
-		p[i] += go[i].first;
+		potencial[i] += go[i].first;
 	}
 	return 1;
 }
 
 
-void bfs(const vector<vector<Edge*>> & g, vector<long long> & q) {
-	size_t n = g.size() - 1;
+void bfs(const vector<vector<Edge*>> & graph, vector<long long> & potencial) {
+	size_t n = graph.size() - 1;
 	size_t start = 1;
-	vector<bool> vis(g.size(), 0);
-	vector<pair<int, Edge*>> p(g.size(), {INF, nullptr});
+	vector<bool> vis(graph.size(), 0);
+	vector<pair<int, Edge*>> p(graph.size(), {INF, nullptr});
 	p[start] = {0, nullptr};
 	std::queue<int> qu;
 	qu.push(start);
@@ -129,7 +129,7 @@ void bfs(const vector<vector<Edge*>> & g, vector<long long> & q) {
 		int cur = qu.front();
 		qu.pop();
 
-		for (auto i : g[cur])
+		for (auto i : graph[cur])
 		{
 			if (p[cur].first + i->tm * (i->flow < 0 ? -1 : 1) < p[i->to].first && i->cpc > i->flow)
 			{
@@ -148,15 +148,15 @@ void bfs(const vector<vector<Edge*>> & g, vector<long long> & q) {
 		return;
 	}
 	for (size_t i = 0; i <= n; ++i) {
-		q[i] = p[i].first;
+		potencial[i] = p[i].first;
 	}
 }
 
 
-void read(vector<vector<Edge*>>& g, vector<vector<int>>& ans, size_t& k) {
+void read(vector<vector<Edge*>>& graph, vector<vector<int>>& ans, size_t& k) {
 	size_t n, m;
 	cin >> n >> m >> k;
-	g = vector<vector<Edge*>>(n + 1);
+	graph = vector<vector<Edge*>>(n + 1);
 	for (size_t i = 1; i <= m; i++)
 	{
 		int x, y, t;
@@ -165,26 +165,26 @@ void read(vector<vector<Edge*>>& g, vector<vector<int>>& ans, size_t& k) {
 		Edge * e_b = new Edge(x, t, 1, i);
 		e->back = e_b;
 		e_b->back = e;
-		g[x].push_back(e);
-		g[y].push_back(e_b);
+		graph[x].push_back(e);
+		graph[y].push_back(e_b);
 	}
 	ans = vector<vector<int>>(k + 1);
 	return; 
 }
 
 
-long double solution(vector<vector<Edge*>>& g, vector<vector<int>>& ans, size_t k) {
-	vector<long long> q(g.size() + 1, 0);
-	bfs(g, q);
+long double solution(vector<vector<Edge*>>& graph, vector<vector<int>>& ans, size_t k) {
+	vector<long long> potencial(graph.size() + 1, 0);
+	bfs(graph, potencial);
 	for (size_t i = 0; i < k; ++i)
-		if (!dijkstra(g, q, 1, g.size() - 1)){
+		if (!dijkstra(graph, potencial, 1, graph.size() - 1)){
 			cout << -1 << endl;
 			return 0;
 		};
 	long double tm = 0;
 	for (size_t i = 0; i < k; i++)
 	{
-		dfs(g, ans[i], tm);
+		dfs(graph, ans[i], tm);
 	
 	}
 	return tm;
@@ -202,9 +202,9 @@ void write(vector<vector<int>>& ans, long double tm, size_t k) {
 
 
 int main() {
-	vector<vector<Edge*>> g;
+	vector<vector<Edge*>> graph;
 	vector<vector<int>> ans;
 	size_t k = 0;
-	read(g, ans, k);
-	write(ans, solution(g, ans, k), k);
+	read(graph, ans, k);
+	write(ans, solution(graph, ans, k), k);
 }
